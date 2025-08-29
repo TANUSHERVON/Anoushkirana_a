@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1220" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <title>Muslim Lite</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#121a2e; --card2:#0f1628;
+      --text:#e9eef7; --muted:#a7b3cc; --accent:#67e8f9; --accent2:#94f7c1;
+      --line:#202a44; --radius:16px; --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 700px at 110% -10%, #243a67 0%, #10182b 50%, var(--bg) 100%),
+        linear-gradient(180deg,#0b1220, #0b1220);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+    }
+    header{
+      display:flex; align-items:center; gap:10px; padding:14px 16px; position:sticky; top:0; z-index:10;
+      backdrop-filter:saturate(120%) blur(8px); background:rgba(11,18,32,.7); border-bottom:1px solid var(--line);
+    }
+    header h1{font-size:18px; margin:0; letter-spacing:.3px}
+    .tag{font-size:12px; color:var(--muted)}
+    .wrap{max-width:1100px; margin:0 auto; padding:18px}
+    nav{
+      display:grid; grid-template-columns: repeat(6, minmax(0,1fr));
+      gap:10px; margin:12px 0 18px;
+    }
+    nav button{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line); border-radius:12px; padding:10px;
+      color:var(--text); box-shadow:var(--shadow); cursor:pointer; transition:.2s transform;
+      display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px;
+    }
+    nav button.active{outline:2px solid var(--accent)}
+    nav button:hover{transform: translateY(-2px)}
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: 1.2fr .8fr;
+    }
+    @media (max-width: 900px){
+      nav{grid-template-columns: repeat(3, minmax(0,1fr));}
+      .grid{grid-template-columns: 1fr;}
+    }
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
+      border:1px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);
+    }
+    .muted{color:var(--muted)}
+    .title{font-weight:700; letter-spacing:.2px; margin:0 0 8px}
+    .flex{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+    .spaced{display:flex; align-items:center; justify-content:space-between; gap:16px}
+    .row{display:flex; align-items:center; justify-content:space-between; border-top:1px dashed var(--line); padding:10px 0}
+    .row:first-child{border-top:none}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line); background:linear-gradient(180deg,var(--card),var(--card2)); font-size:14px;
+    }
+    .clock{font-size:40px; font-weight:800; letter-spacing:1px}
+    .countdown{font-variant-numeric: tabular-nums; font-weight:700}
+    .btn{
+      padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      color:var(--text); cursor:pointer
+    }
+    input, select{
+      background:#0a1222; color:var(--text); border:1px solid var(--line); border-radius:10px;
+      padding:10px; outline:none; width:100%;
+    }
+    .qibla-wrap{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+    .dial{
+      --size: 260px;
+      width:var(--size); height:var(--size); border-radius:999px;
+      border:2px solid var(--line); position:relative; background:radial-gradient(circle at 50% 40%, #1a2746 0%, #0e1629 70%);
+      box-shadow:inset 0 0 30px rgba(0,0,0,.35);
+    }
+    .needle{
+      position:absolute; left:50%; top:50%; transform-origin: 50% 90%;
+      width:4px; height:45%; background:linear-gradient(180deg, var(--accent), transparent);
+      border-radius:999px; transform: translate(-50%,-90%) rotate(0deg);
+    }
+    .kaaba{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:12px; height:12px; background:#111; border:2px solid #ffd700; border-radius:3px;
+      box-shadow:0 0 12px rgba(255,215,0,.3);
+    }
+    footer{padding:20px; text-align:center; color:var(--muted)}
+    .small{font-size:12px}
+    .ayah{font-size:20px; line-height:1.8; text-align:right; direction:rtl}
+    .seg{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+    .seg button{padding:6px 10px; border-radius:10px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer}
+    .seg button.active{background:var(--card2)}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="icons/icon-192.png" width="28" height="28" alt="App icon" style="border-radius:6px">
+    <div>
+      <h1>Muslim Lite</h1>
+      <div class="tag">A lightweight, installable web app for prayer times, Qibla, Quran (Al‑Fātiḥah), tasbih and Hijri date.</div>
+    </div>
+    <div style="margin-left:auto" class="seg">
+      <select id="langSelect" title="Language" style="padding:8px 10px; border-radius:10px; background:#0a1222; color:#e9eef7; border:1px solid var(--line)">
+        <option value="en">EN</option>
+        <option value="ru">RU</option>
+        <option value="tg">TG</option>
+        <option value="id">ID</option>
+      </select>
+      <button id="qrBtn" title="Show QR">🔳 QR</button>
+      <button id="installBtn" title="Install">➕ Install</button>
+      <a class="btn" href="#" id="refreshSW" title="Update app">↻ Update</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav>
+      <button class="active" data-tab="home">🏠 Home</button>
+      <button data-tab="qibla">🧭 Qibla</button>
+      <button data-tab="tasbih">🔢 Tasbih</button>
+      <button data-tab="quran">📖 Quran</button>
+      <button data-tab="calendar">📅 Calendar</button>
+      <button data-tab="settings">⚙️ Settings</button>
+    </nav>
+
+    <section id="home" class="grid">
+      <div class="card">
+        <div class="spaced">
+          <div>
+            <h2 class="title">Today</h2>
+            <div class="muted" id="dateStr"></div>
+          </div>
+          <div class="pill"><span>📍</span><span id="locStr">Locating…</span></div>
+        </div>
+        <div style="margin:12px 0" class="spaced">
+          <div class="clock" id="clock">--:--</div>
+          <div>
+            <div class="muted small">Next prayer</div>
+            <div style="font-size:24px; font-weight:800" id="nextPrayer">—</div>
+            <div class="countdown muted" id="countdown">—</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h3 class="title">Prayer times</h3>
+          <div id="times"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="title">Quick actions</h3>
+        <div class="flex">
+          <button class="btn" id="detectBtn">Detect location</button>
+          <button class="btn" id="openMosques">Mosques near me</button>
+          <button class="btn" id="addToCalendar">Add today to calendar (.ics)</button>
+        </div>
+        <div style="margin-top:12px" class="muted small">
+          Tip: In Settings you can change the calculation method (MWL, Umm al‑Qura, etc.) and Asr juristic method.
+        </div>
+      </div>
+    </section>
+
+    <section id="qibla" class="hidden">
+      <div class="card">
+        <h2 class="title">Qibla direction</h2>
+        <div class="qibla-wrap">
+          <div class="dial">
+            <div class="needle" id="needle"></div>
+            <div class="kaaba"></div>
+          </div>
+          <div>
+            <div class="row"><span>Bearing to Kaaba</span><strong id="bearing">—</strong></div>
+            <div class="row"><span>Device heading</span><strong id="heading">—</strong></div>
+            <div class="row"><span>Rotate until both match</span><strong>✅</strong></div>
+            <div class="muted small" style="margin-top:8px">
+              On phones, allow motion/orientation access. On desktops, use the numeric bearing.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tasbih" class="hidden">
+      <div class="card">
+        <h2 class="title">Tasbih counter</h2>
+        <div class="spaced">
+          <div style="font-size:64px; font-weight:900" id="count">0</div>
+          <div class="seg">
+            <button id="inc">+1</button>
+            <button id="reset">Reset</button>
+            <button id="set33">Set 33</button>
+            <button id="set99">Set 99</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quran" class="hidden">
+      <div class="card">
+        <h2 class="title">Quran (القرآن)</h2>
+        <div class="seg" style="margin-bottom:10px">
+          <select id="surahSelect" style="min-width:220px"></select>
+          <select id="quranLang" title="Quran language">
+            <option value="ar">Arabic</option>
+            <option value="en">English</option>
+            <option value="ru">Russian</option>
+            <option value="tg">Tajik</option>
+            <option value="id">Indonesian</option>
+          </select>
+          <label class="pill"><input id="showArabic" type="checkbox" checked style="margin-right:8px">Show Arabic</label>
+          <button id="prevSurah">◀️ Prev</button>
+          <button id="nextSurah">Next ▶️</button>
+          <button id="fetchQuran">⬇️ Fetch full (selected language)</button>
+        </div>
+          <select id="surahSelect" style="min-width:220px"></select>
+          <button id="prevSurah">◀️ Prev</button>
+          <button id="nextSurah">Next ▶️</button>
+          <button id="fetchQuran">⬇️ Fetch full Quran (once)</button>
+        </div>
+        <div class="seg" style="margin:6px 0">
+          <input id="ayahSearch" placeholder="Search Arabic text…" style="min-width:260px">
+          <button id="clearSearch">Clear</button>
+          <label class="pill"><input id="showBismillah" type="checkbox" checked style="margin-right:8px">Show Bismillah</label>
+        </div>
+        <div id="surahMeta" class="muted small">—</div>
+        <div id="surah" class="ayah" style="margin-top:8px; font-size:22px; line-height:2"></div>
+      </div>
+    </section>
+
+    <section id="calendar" class="hidden">
+      <div class="card">
+        <h2 class="title">Hijri date</h2>
+        <div class="row"><span>Islamic (Umm al‑Qura via Intl API)</span><strong id="hijri">—</strong></div>
+        <div class="row"><span>Gregorian</span><strong id="greg">—</strong></div>
+        <div class="muted small">
+          If your browser doesn’t support the Islamic calendar locale, we’ll fall back to a tabular approximation.
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="hidden">
+      <div class="card">
+        <h2 class="title">Location</h2>
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <div>
+            <label>Latitude</label>
+            <input type="number" step="0.000001" id="lat" placeholder="e.g., 38.5598">
+          </div>
+          <div>
+            <label>Longitude</label>
+            <input type="number" step="0.000001" id="lon" placeholder="e.g., 68.7870">
+          </div>
+        </div>
+        <div class="seg" style="margin-top:12px">
+          <button id="saveLoc">Save</button>
+          <button id="useDushanbe">Use Dushanbe, TJ</button>
+        </div>
+      </div>
+
+            <div class="card">
+        <h2 class="title">Calculation</h2>
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <div>
+            <label>Method</label>
+            <select id="method">
+              <option value="MWL">MWL (default)</option>
+              <option value="ISNA">ISNA</option>
+              <option value="Egypt">Egyptian</option>
+              <option value="Makkah">Umm al-Qura, Makkah</option>
+              <option value="Karachi">University of Karachi</option>
+              <option value="Tehran">Tehran</option>
+              <option value="Jafari">Jafari</option>
+            </select>
+          </div>
+          <div>
+            <label>Asr method</label>
+            <select id="asr">
+              <option value="Standard">Standard (Shafi‘i)</option>
+              <option value="Hanafi">Hanafi</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr; margin-top:10px">
+          <div>
+            <label>High‑latitude rule</label>
+            <select id="highLat">
+              <option value="AngleBased">Angle‑based (recommended)</option>
+              <option value="OneSeventh">One‑seventh of night</option>
+              <option value="Midnight">Middle of night</option>
+            </select>
+          </div>
+          <div>
+            <label>Altitude (meters)</label>
+            <input type="number" id="altitude" placeholder="0" min="0">
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="muted small">Fine‑tune offsets (minutes):</div>
+          <div class="grid" style="grid-template-columns:repeat(6, 1fr); gap:8px; margin-top:8px">
+            <input type="number" id="off_fajr" placeholder="Fajr">
+            <input type="number" id="off_sunrise" placeholder="Sunrise">
+            <input type="number" id="off_dhuhr" placeholder="Dhuhr">
+            <input type="number" id="off_asr" placeholder="Asr">
+            <input type="number" id="off_maghrib" placeholder="Maghrib">
+            <input type="number" id="off_isha" placeholder="Isha">
+          </div>
+          <div class="seg" style="margin-top:10px">
+            <button id="saveOffsets">Save offsets</button>
+            <button id="resetOffsets">Reset</button>
+          </div>
+        
+        <div class="grid" style="grid-template-columns:1fr 1fr; margin-top:10px">
+          <div>
+            <label id="lbl_provider">Source</label>
+            <select id="provider">
+              <option value="offline">Offline (on-device)</option>
+              <option value="aladhan">Online (by location)</option>
+            
+              <option value="aladhan_city">Online (City/Country)</option></select>
+          </div>
+          <div>
+            <label id="lbl_countryNote">Note</label>
+            <div class="muted small" id="countryNote">Online mode uses a popular prayer-time API by coordinates (good for many countries). Times may differ from local mosque schedules.</div>
+          <div class="grid" style="grid-template-columns:1fr 1fr; margin-top:10px">
+            <div>
+              <label id="lbl_city">City</label>
+              <input id="cityInput" placeholder="e.g., Dushanbe">
+            </div>
+            <div>
+              <label id="lbl_country">Country</label>
+              <input id="countryInput" placeholder="e.g., Tajikistan">
+            </div>
+          </div>
+          <div class="seg" style="margin-top:8px">
+            <button id="btn_fill_city_country">Use my location → fill city & country</button>
+          </div>
+
+          </div>
+        </div>
+</div>
+      </div></div>
+    </section>
+
+    <footer>
+      <div>© 2025 Muslim Lite. For guidance, consult your local community. Times are estimates.</div>
+      <div class="small">Installable PWA • Offline ready • No tracking • Open-source bundle</div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+
+  <div id="qrModal" style="position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50">
+    <div class="card" style="max-width:520px; width:92%;">
+      <h3 class="title" id="qr_title">Open this site via QR</h3>
+      <div class="seg" style="margin:10px 0">
+        <input id="qrUrl" placeholder="https://your-domain.com/app" />
+        <button id="qrGen">Generate</button>
+        <button id="qrClose">Close</button>
+      </div>
+      <div class="spaced" style="justify-content:center; padding:10px">
+        <img id="qrImg" alt="QR" style="background:#fff; padding:10px; border-radius:12px; max-width:280px" />
+      </div>
+      <div class="muted small" id="qr_hint">Tip: Deploy the folder to any static host, paste the URL, and scan with your phone.</div>
+    </div>
+  </div>
+
+</body>
+</html>
+</select>
+          </div>
+          <div>
+            <label id="lbl_countryNote">Note</label>
+            <div class="muted small" id="countryNote">Online mode uses a popular prayer-time API by coordinates (good for many countries). Times may differ from local mosque schedules.</div>
+          </div>
+        </div>
+</div>
+      </div></div>
+    </section>
+
+    <footer>
+      <div>© 2025 Muslim Lite. For guidance, consult your local community. Times are estimates.</div>
+      <div class="small">Installable PWA • Offline ready • No tracking • Open-source bundle</div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+
+  <div id="qrModal" style="position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50">
+    <div class="card" style="max-width:520px; width:92%;">
+      <h3 class="title" id="qr_title">Open this site via QR</h3>
+      <div class="seg" style="margin:10px 0">
+        <input id="qrUrl" placeholder="https://your-domain.com/app" />
+        <button id="qrGen">Generate</button>
+        <button id="qrClose">Close</button>
+      </div>
+      <div class="spaced" style="justify-content:center; padding:10px">
+        <img id="qrImg" alt="QR" style="background:#fff; padding:10px; border-radius:12px; max-width:280px" />
+      </div>
+      <div class="muted small" id="qr_hint">Tip: Deploy the folder to any static host, paste the URL, and scan with your phone.</div>
+    </div>
+  </div>
+
+</body>
+</html>
